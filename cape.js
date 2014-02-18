@@ -63,17 +63,19 @@ JSONRPC.prototype.send = function(reqid, url, method, params) {
     this.connection.send(reply.tree());
 }
 
-CapeClient.prototype.login = function(username, password) {
+CapeClient.prototype.login = function(username, password, uiCallback) {
     this.userid = username;
     this.username = username + '@xmpp.ask-cs.com/web'; // NOTE: Changed web to Smack to match with the alarm sending/receiving in the app/agents
-
+	this.loginUiCallback = uiCallback
     var thiz = this;
-    this.connection.connect(this.username,
-                            password,
-                            onConnect);
+    
 
-    function onConnect(status) {
-
+    var onConnectCallback = function onConnect(status) {
+		
+		// Send this login status update to the callback (UI)
+		thiz.loginUiCallback(status);
+		
+		// Handle the status update here
         if (status == Strophe.Status.CONNECTING) {
             console.log('Strophe is connecting (' + thiz.username + ').');
         } else if (status == Strophe.Status.CONNFAIL) {
@@ -83,13 +85,18 @@ CapeClient.prototype.login = function(username, password) {
             thiz.disconnected();
         } else if (status == Strophe.Status.CONNECTED) {
             console.log('Strophe is connected.');
-
             thiz.connected();
+        } else if (status == Strophe.Status.AUTHFAIL) {
+			console.log('Authentication failed. Did you type the correct password?');
         } else if (status == Strophe.Status.CONNFAIL) {
             console.log('Strophe failed to connect.');
         }
-    }
-
+		
+    };
+		
+	this.connection.connect(this.username,
+                            password,
+                            onConnectCallback);
     /**/
 }
 
@@ -102,7 +109,7 @@ CapeClient.prototype.connected = function() {
 	var thiz = this;
 	var msgHandler = function onMessage(msg) {
         
-		//console.log("Msg data"); console.log(msg);
+		console.log("Msg data"); console.log(msg);
 		
 		var to = msg.getAttribute('to');
         var from = msg.getAttribute('from');
@@ -115,15 +122,16 @@ CapeClient.prototype.connected = function() {
             var json = JSON.parse(Strophe.getText(body));
 
              if(json.method != null) { // Pandion
-				//console.log("Received new call: ",json);
+				console.log("Received new call: ",json);
 				thiz.messageHandler(json.method, json.params);
                 
             } else { // AlarmAgent
-				//console.log("Received new call: ",json);
+				console.log("Received new call: ",json);
 				thiz.messageFromAgentHandler(json, thiz.lastCalledMethod);
 			}
         }
 		
+		console.log(errors);
         if (errors.length > 0) {
             var error = errors[0];
             console.log(error);

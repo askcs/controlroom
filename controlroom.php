@@ -7,7 +7,6 @@ if(!isset($_POST['un'])){ header('Location: login.php?un=ecr'); }
 $startInterval = 850;
 if(isset($_POST['safestart'])){ $startInterval = 1800; }
 
-
 const SHORT_NAME = 'BHV';
 const FULL_NAME = 'Bedrijfshulpverlening';
 ?>
@@ -138,8 +137,8 @@ const FULL_NAME = 'Bedrijfshulpverlening';
 		}
 		
 		var messageFromAgentHandler = function(json, lastCalledMethod){
-			//console.log("Data from AlarmAgent");
-			//console.log(json);
+			console.log("XMPP Data:");
+			console.log(json);
 			
 			// Data which this webclient has requested
 			if(lastCalledMethod == "getAllGroupMembersStatus"){
@@ -168,35 +167,61 @@ const FULL_NAME = 'Bedrijfshulpverlening';
 			
 		}
 		
-		cc = new CapeClient(msgHandler, messageFromAgentHandler);
-		cc.login(username, "<?=$_POST['pw']?>");
-		
-		setTimeout(function(){
-		
-			// Set the connection state
-			addAlarmListUpdate("Verbonden met het alarmeringen netwerk.", 'connection-online');
+		var uiLoginCallback = function loginStatusUpdate(status){
+			// Switch it
+			console.log('Login status update: ' + status);
 			
-			// Set the status in the interface; after first try to get data from the AlarmAgent
-			$("#dashboard-status").html("<h3>Status: <span class='label label-success' style='font-size: 85%; line-height: 1.1em;'>Verbonden</a></h3>");
+			// Succesfully connected; show it in the UI
+			if(status == Strophe.Status.CONNECTED){
 			
-			// Get the domain agent id
-			console.log('Request domainAgentUrl from our own cloudagent: ' + userPersonalAgentXMPPAddress);
-			cc.call(userPersonalAgentXMPPAddress, "getDomainAgentUrl", {}, function(result){});
-			
-			setTimeout(function(){
+				// Set the connection state
+				addAlarmListUpdate("Verbonden met het alarmeringen netwerk.", 'connection-online');
 				
-				// Get the AlarmAgent URL from the domainagent
-				cc.call(DOMAIN_AGENT_URL, "getAlarmManagementAgentUrl", {}, function(result){});
+				// Set the status in the interface
+				$("#dashboard-status").html("<h3>Status: <span class='label label-success' style='font-size: 85%; line-height: 1.1em;'>Verbonden</a></h3>");
+				
+				
+				// Now load the initial data
+				
+				// Get the domain agent id
+				console.log('Request domainAgentUrl from our own cloudagent: ' + userPersonalAgentXMPPAddress);
+				cc.call(userPersonalAgentXMPPAddress, "getDomainAgentUrl", {}, function(result){});
 				
 				setTimeout(function(){
-					// Get intial data to display
-					cc.call(ALARM_AGENT_URL, "getAllGroupMembersStatus", {}, function(result){});
+					
+					// Get the AlarmAgent URL from the domainagent
+					cc.call(DOMAIN_AGENT_URL, "getAlarmManagementAgentUrl", {}, function(result){});
+					
+					setTimeout(function(){
+						// Get intial data to display
+						cc.call(ALARM_AGENT_URL, "getAllGroupMembersStatus", {}, function(result){});
+					}, <?=$startInterval?>);
+				
 				}, <?=$startInterval?>);
 			
-			}, <?=$startInterval?>);
 			
+			} else if(status == Strophe.Status.CONNECTING){ // Currently connecting
+				$("#dashboard-status").html("<h3>Status: <span class='label label-info' style='font-size: 85%; line-height: 1.1em;'>Verbinden...</a></h3>");
+			} else if(status == Strophe.Status.CONNFAIL){ // Random error
+				$("#dashboard-status").html("<h3>Status: <span class='label label-important' style='font-size: 85%; line-height: 1.1em;'>Verbinden mislukt</a></h3>");
+			} else if(status == Strophe.Status.AUTHENTICATING){ // Currently authentication
+				$("#dashboard-status").html("<h3>Status: <span class='label label-info' style='font-size: 85%; line-height: 1.1em;'>Aanmelden...</a></h3>");
+			} else if(status == Strophe.Status.AUTHFAIL){ // Authentication failed
+				$("#dashboard-status").html("<h3>Status: <span class='label label-important' style='font-size: 85%; line-height: 1.1em;'>Aanmelden mislukt</a></h3>");
+			} else if(status == Strophe.Status.DISCONNECTED){ // Disconnected
+				$("#dashboard-status").html("<h3>Status: <span class='label label-warning' style='font-size: 85%; line-height: 1.1em;'>Verbinding losgekoppeld</a></h3>");
+			} else if(status == Strophe.Status.DISCONNECTING){ // Currently disconnected
+				$("#dashboard-status").html("<h3>Status: <span class='label label-warning' style='font-size: 85%; line-height: 1.1em;'>Verbinding loskoppelen...</a></h3>");
+			} else if(status == Strophe.Status.ATTACHED){ // Attatched (no clue what it is exactly)
+				//$("#dashboard-status").html("<h3>Status: <span class='label label-warning' style='font-size: 85%; line-height: 1.1em;'>Disconnected</a></h3>");
+			} else if(status == Strophe.Status.ERROR){ // Authentication failed (wrong username/password)
+				$("#dashboard-status").html("<h3>Status: <span class='label label-important' style='font-size: 85%; line-height: 1.1em;'>Login mislukt</a></h3>");
+			}
 			
-		}, <?=$startInterval?>);
+		};
+		
+		cc = new CapeClient(msgHandler, messageFromAgentHandler);
+		cc.login(username, "<?=$_POST['pw']?>", uiLoginCallback);
 		
 	});
 	
