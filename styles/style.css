@@ -1,0 +1,135 @@
+body#login {
+  padding-top: 40px;
+  padding-bottom: 40px;
+  background-color: #eee;
+}
+
+.form-signin {
+  max-width: 330px;
+  padding: 15px;
+  margin: 0 auto;
+}
+.form-signin .form-signin-heading,
+.form-signin .checkbox {
+  margin-bottom: 10px;
+}
+.form-signin .checkbox {
+  font-weight: normal;
+}
+.form-signin input[type="text"],
+.form-signin input[type="password"],
+.form-signin input[type="checkbox"] {
+  position: relative;
+  font-size: 16px;
+  height: auto;
+  padding: 10px;
+  -webkit-box-sizing: border-box;
+	 -moz-box-sizing: border-box;
+		  box-sizing: border-box;
+}
+.form-signin input[type="text"]:focus,
+.form-signin input[type="password"]:focus,
+.form-signin input[type="checkbox"]:focus {
+  z-index: 2;
+}
+.form-signin input[type="text"],
+.form-signin input[type="checkbox"] {
+  margin-bottom: -1px;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+.form-signin input[type="password"] {
+  margin-bottom: 10px;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
+#login label{
+	display: inline-block;
+	margin-right: 1px;
+}
+
+#safestart{
+	display: inline-block;
+}
+
+/* Dashboard */
+body#dashboard{
+	padding-top: 80px;
+	overflow-y: scroll;
+}
+
+#dashboard-loading{
+	line-height: 60px;
+	margin-left: 10px;
+}
+
+.groupmember-statusses-table-group-heading{
+	font-weight: bold;
+	background-color: #111 !important;
+}
+
+.groupmember-statusses-table td:hover{
+	cursor: pointer;
+}
+
+.content-block{
+	margin-top: 20px;
+	padding: 10px;
+
+	background-color: #333;
+	-webkit-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+	
+	-webkit-border-radius: 6px;
+	-moz-border-radius: 6px;
+	border-radius: 6px;
+}
+
+#map-canvas{
+	width: 100%;
+	height: 400px;
+}
+
+#map-canvas img { 
+	max-width: none;
+}
+
+#map-canvas label { 
+	width: auto; display:inline; 
+} 
+
+hr{
+	margin: 10px 0;
+	border-color: #444;
+}
+
+#alarm-updates-list{
+	list-style-type: none;
+	margin: 0;
+	margin-top: 20px;
+	padding: 4px;
+	overflow: auto;
+}
+
+#alarm-updates-list li{
+	padding: 2px 0;
+	border-bottom: 1px solid #CCC;
+	float: left;
+	overflow: auto;
+	width: 100%;
+}
+
+.alarm-updates-list-time{
+	margin-right: 5px;
+}
+
+.list-icon{
+	float: left;
+	margin: 0px 15px 5px 5px;
+}
+
+#groupstatusses-container p{
+	margin-top: 20px;
+	text-align: center;
+}

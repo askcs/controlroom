@@ -12,7 +12,7 @@ const FULL_NAME = 'Bedrijfshulpverlening';
 ?>
 <!DOCTYPE html>
 <head>
-    <meta charset="utf-8">
+	<meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <meta name="author" content="">
@@ -39,6 +39,9 @@ const FULL_NAME = 'Bedrijfshulpverlening';
 	<!-- <script src="http://jawj.github.com/OverlappingMarkerSpiderfier/bin/oms.min.js"></script> -->
 	<script src="external/oms.min.js"></script>
 
+	<!-- Custom CSS -->
+	<link href="styles/style.css" rel="stylesheet">
+	
     <script type="text/javascript">
 	
 	// ucfirst
@@ -193,8 +196,16 @@ const FULL_NAME = 'Bedrijfshulpverlening';
 					cc.call(DOMAIN_AGENT_URL, "getAlarmManagementAgentUrl", {}, function(result){});
 					
 					setTimeout(function(){
+						
+						// Initial agent data loading done
+						$("#dashboard-loading").html('');
+						
+						// Show loading icon from here for the groupstatusses
+						$("#groupstatusses-container").html('<p><img alt="Laden..." src="img/loader.gif" /></p>');
+						
 						// Get intial data to display
 						cc.call(ALARM_AGENT_URL, "getAllGroupMembersStatus", {}, function(result){});
+						
 					}, <?=$startInterval?>);
 				
 				}, <?=$startInterval?>);
@@ -219,6 +230,9 @@ const FULL_NAME = 'Bedrijfshulpverlening';
 			}
 			
 		};
+		
+		// Starting the login process, show loader
+		$("#dashboard-loading").html('<p><img alt="Laden..." src="img/loader.gif" /></p>');
 		
 		cc = new CapeClient(msgHandler, messageFromAgentHandler);
 		cc.login(username, "<?=$_POST['pw']?>", uiLoginCallback);
@@ -425,97 +439,23 @@ const FULL_NAME = 'Bedrijfshulpverlening';
 	google.maps.event.addDomListener(window, 'load', initialize);
     </script>
 	
-	<style>
-	body{
-		padding-top: 80px;
-		overflow-y: scroll;
-	}
+</head>
+<body id="dashboard">
 	
-	.groupmember-statusses-table-group-heading{
-		font-weight: bold;
-		background-color: #111 !important;
-	}
-	
-	.groupmember-statusses-table td:hover{
-		cursor: pointer;
-	}
-	
-	.content-block{
-		margin-top: 20px;
-		padding: 10px;
+	  <!-- Navbar -->
+<div class="navbar navbar-fixed-top">
+	<div class="navbar-inner">
+		<div class="container">
+			<a class="brand" href=""><?=FULL_NAME?> &ndash; Alarmcontrolecentrum</a>
 
-		background-color: #333;
-		-webkit-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
-		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
-		
-		-webkit-border-radius: 6px;
-		-moz-border-radius: 6px;
-		border-radius: 6px;
-	}
-	
-	#map-canvas{
-		width: 100%;
-		height: 400px;
-	}
-	
-	#map-canvas img { 
-		max-width: none;
-	}
+			<div class="nav pull-right" id="dashboard-loading"></div>
+			<div class="nav pull-right" id="dashboard-status">
+				<h3>Status: <span class='label label-warning' style='font-size: 85%; line-height: 1.1em;'>Verbinden...</a></h3>
+			</div>
 
-	#map-canvas label { 
-		width: auto; display:inline; 
-	} 
-	
-	hr{
-		margin: 10px 0;
-		border-color: #444;
-	}
-	
-	#alarm-updates-list{
-		list-style-type: none;
-		margin: 0;
-		margin-top: 20px;
-		padding: 4px;
-		overflow: auto;
-	}
-	
-	#alarm-updates-list li{
-		padding: 2px 0;
-		border-bottom: 1px solid #CCC;
-		float: left;
-		overflow: auto;
-		width: 100%;
-	}
-	
-	.alarm-updates-list-time{
-		margin-right: 5px;
-	}
-	
-	.list-icon{
-		float: left;
-		margin: 0px 15px 5px 5px;
-	}
-	
-	#groupstatusses-container p{
-		margin-top: 20px;
-		text-align: center;
-	}
-	
-	</style>
-	
-  </head>
-  <body>
-	
-	  <!-- Navbar
-    ================================================== -->
- <div class="navbar navbar-fixed-top">
-   <div class="navbar-inner">
-     <div class="container">
-       <a class="brand" href=""><?=FULL_NAME?> &ndash; Alarmcontrolecentrum</a>
-       <div class="nav pull-right" id="dashboard-status"><h3>Status: <span class='label label-warning' style='font-size: 85%; line-height: 1.1em;'>Verbinden...</a></h3></div>
-     </div>
-   </div>
- </div>
+		</div>
+	</div>
+</div>
 
 
 	<div class="container">
@@ -543,7 +483,7 @@ const FULL_NAME = 'Bedrijfshulpverlening';
 				<div class="content-block">
 					<h3>Groepsleden statussen</h2>
 					<hr />
-					<div id="groupstatusses-container"><p><img alt="Laden..." src="img/loader.gif" /></p></div>
+					<div id="groupstatusses-container"></div>
 				</div>
 			</div>
 		</div>
