@@ -44,6 +44,9 @@ const FULL_NAME = 'Bedrijfshulpverlening';
 	
     <script type="text/javascript">
 	
+	// Stophe documentation: http://strophe.im/strophejs/doc/1.1.3/files/strophe-js.html
+	
+	
 	// ucfirst
 	String.prototype.ucfirst = function() {
 		return this.charAt(0).toUpperCase() + this.slice(1);
@@ -437,6 +440,11 @@ const FULL_NAME = 'Bedrijfshulpverlening';
 	}
 
 	google.maps.event.addDomListener(window, 'load', initialize);
+	
+	/* Logout */
+	$('#logout').click(function(e){
+		cc.disconnect();
+	});
     </script>
 	
 </head>
@@ -446,7 +454,7 @@ const FULL_NAME = 'Bedrijfshulpverlening';
 <div class="navbar navbar-fixed-top">
 	<div class="navbar-inner">
 		<div class="container">
-			<a class="brand" href=""><?=FULL_NAME?> &ndash; Alarmcontrolecentrum</a>
+			<span class="brand"><a href="" class="brand"><?=FULL_NAME?> &ndash; Alarmcontrolecentrum</a> <a id="logout" class="btn btn-invert" href="login.php"> Uitloggen</a></span>
 
 			<div class="nav pull-right" id="dashboard-loading"></div>
 			<div class="nav pull-right" id="dashboard-status">
