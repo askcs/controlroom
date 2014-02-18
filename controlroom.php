@@ -232,6 +232,11 @@ const FULL_NAME = 'Bedrijfshulpverlening';
 				$("#dashboard-status").html("<h3>Status: <span class='label label-important' style='font-size: 85%; line-height: 1.1em;'>Login mislukt</a></h3>");
 			}
 			
+			// Also remove the loading icon if something went wrong
+			if(status == Strophe.Status.CONNFAIL || status == Strophe.Status.AUTHFAIL || status == Strophe.Status.ERROR){
+				$("#dashboard-loading").html('');
+			}
+			
 		};
 		
 		// Starting the login process, show loader
