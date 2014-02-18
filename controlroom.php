@@ -71,7 +71,7 @@ const FULL_NAME = 'Bedrijfshulpverlening';
 				console.log("Someone's status has changed, lets re-request all groupmembers statusses");
 				cc.call(ALARM_AGENT_URL, "getAllGroupMembersStatus", {}, function(result){ });
 				
-				addAlarmListUpdate("Een groepslid heeft zijn status aangepast, de lijst in de statussen kolom is geupdatet.", 'group-change');
+				//addAlarmListUpdate("Een groepslid heeft zijn status aangepast, de lijst in de statussen kolom is geupdatet.", 'group-change');
 			}
 			
 			if(method == "alarm"){
@@ -225,6 +225,9 @@ const FULL_NAME = 'Bedrijfshulpverlening';
 		
 	});
 	
+	// Keep track of the users current status
+	var firstRun = true;
+	var currentUsersStatus = {};
 	function createGroupsTable(groupsJSON){
 	
 		// Create table
@@ -239,7 +242,7 @@ const FULL_NAME = 'Bedrijfshulpverlening';
 		head.append(row);
 		table.append(head);
 		
-		// Fill table		
+		// Fill table	
 		$.each(groupsJSON, function(k, v) {
 		
 			row = $('<tr></tr>');
@@ -251,6 +254,35 @@ const FULL_NAME = 'Bedrijfshulpverlening';
 		
 			$.each(v, function(k1, v1) {
 				row = $('<tr></tr>');
+				
+				// Check the current status against previous call to this function (check for changes)
+				// Only check for changes after the first run (reset firstRun outside each loops)
+				if(!firstRun){
+					// Is this user already known or new?
+					
+					if(currentUsersStatus[k1] != null && typeof currentUsersStatus[k1] != 'undefined'){
+						
+						// Is the status changed?
+						if(currentUsersStatus[k1] != v1){
+						
+							// Is this change to available or unavailable?
+							if(v1){
+								addAlarmListUpdate("Collega "+k1+" heeft zijn status aangepast naar beschikbaar", 'group-change-available');
+							} else {
+								addAlarmListUpdate("Collega "+k1+" heeft zijn status aangepast naar niet beschikbaar", 'group-change-unavailable');
+							}
+						
+						} else {
+							// Nothing, this users status is not changed
+						}
+						
+					} else {
+						addAlarmListUpdate("Een nieuw groepslid ("+k1+") heeft zijn status aangepast.", 'group-change');
+					}
+				}
+				
+				// Push user status
+				currentUsersStatus[k1] = v1;
 				
 				var column0 = $('<td></td>').html("<a data-toggle='modal' href='#realtime' data-un='" + k1 + "' data-status='" + v1 + "' class='btn btn-primary realtime-link' style='margin-right: 10px; padding: 2px;'><img src='img/icon_smartphone_small.png' /></a>" + k1);
 				if(v1){
@@ -266,7 +298,16 @@ const FULL_NAME = 'Bedrijfshulpverlening';
 			
 			});
 		});
+		
+		// Reset firstrun var
+		if(firstRun){
+			// Now it's not longer the first run
+			firstRun = false;
+		}
 
+		console.log('Current users status: ');
+		console.log(currentUsersStatus);
+		
 		$("#groupstatusses-container").html(table);
 		
 		// Link evenhandler to the usernames to it will open a dialog with the username in it
@@ -330,6 +371,10 @@ const FULL_NAME = 'Bedrijfshulpverlening';
 				extraHtml = "<div class='list-icon list-alarm-icon'><img src='img/icon_alarm_small.png' /></div>";
 			}else if(type == "group-change"){
 				extraHtml = "<div class='list-icon list-change-icon'><img src='img/icon_group_change_small.png' /></div>";
+			}else if(type == "group-change-available"){
+				extraHtml = "<div class='list-icon list-change-icon'><img src='img/icon_group_member_available_small.png' /></div>";
+			}else if(type == "group-change-unavailable"){
+				extraHtml = "<div class='list-icon list-change-icon'><img src='img/icon_group_member_unavailable_small.png' /></div>";
 			}else if(type == "status-go"){
 				extraHtml = "<div class='list-icon list-status-icon'><img src='img/icon_status_go_small.png' /></div>";
 			}else if(type == "status-no-go"){
