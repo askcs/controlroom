@@ -322,9 +322,6 @@ function createGroupsTable(groupsJSON){
 		
 		/* Send message to (mobile) user */
 		$('#send-message').click(function(){
-		
-			// Close the modal
-			modalWindow.modal('hide');
 			
 			// Where to send this message to?
 			var sendOption = $('#message-to-pager').val();
@@ -338,6 +335,9 @@ function createGroupsTable(groupsJSON){
 				alert('Vul een bericht in voordat u deze verzend.');
 				return;
 			}
+			
+			// Close the modal
+			modalWindow.modal('hide');
 				
 			// Option: To mobile only and mobile+pager (mobile only part)
 			if(sendOption == 'mobile' || sendOption == 'mobile_pager'){
@@ -430,3 +430,8 @@ function addAlarmListUpdate(msg, type){
 $('#logout').click(function(e){
 	cc.disconnect();
 });
+
+// ucfirst
+String.prototype.ucfirst = function() {
+	return this.charAt(0).toUpperCase() + this.slice(1);
+}

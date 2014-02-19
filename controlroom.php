@@ -22,7 +22,6 @@ const FULL_NAME = 'Bedrijfshulpverlening';
     <meta name="description" content="CapeClient v1.0.0">
     <meta name="viewport" content="width=device-width">
     
-	<!--<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>-->
 	<script src="external/jquery.min.js"></script>
     <script src="lib/strophe.js"></script>
     <script src="cape.js"></script>
@@ -35,22 +34,14 @@ const FULL_NAME = 'Bedrijfshulpverlening';
 	<script src="external/bootstrap.min.js"></script>
 	
 	<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCJjmPn0FpxM7wZ8y-lW4aNsPsq79sKrd8&v=3.exp&sensor=false"></script>
-	<!--<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCXRA0U_rMInxjO3lw2v4_oxAjBOVK4xes&v=3.exp&sensor=false"></script>-->
-	<!-- <script src="http://jawj.github.com/OverlappingMarkerSpiderfier/bin/oms.min.js"></script> -->
 	<script src="external/oms.min.js"></script>
 
 	<!-- Custom CSS -->
 	<link href="styles/style.css" rel="stylesheet">
 	
     <script type="text/javascript">
-	
 	// Stophe documentation: http://strophe.im/strophejs/doc/1.1.3/files/strophe-js.html
 	var startInterval = <?=$startInterval?>;
-	
-	// ucfirst
-	String.prototype.ucfirst = function() {
-		return this.charAt(0).toUpperCase() + this.slice(1);
-	}
 
 	// Currently empty, but after we got a XMPP login, we can find out these URL's by asking the personal agent
 	var ALARM_AGENT_URL = "";
