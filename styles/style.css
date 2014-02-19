@@ -133,3 +133,10 @@ hr{
 	margin-top: 20px;
 	text-align: center;
 }
+
+/* Realtime overlay */
+#realtime-content-container textarea{
+	display: block;
+	width: 90%;
+	height: 100px;
+}

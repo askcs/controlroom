@@ -58,10 +58,13 @@ const FULL_NAME = 'Bedrijfshulpverlening';
 	
 	const CLIENT_HOST = "@xmpp.ask-cs.com/web"; // There is another one hardcoded in cape.js
 	const PA_CLOUD_HOST = "@xmpp.ask-cs.com/cloud";
+	const MOBILE_HOST = "@xmpp.ask-cs.com/android";
 	
 	var cc;
 	var username = "<?=$_POST['un']?>"; // Note: May conflict with the 'username' var used in the modal code
 	var userPersonalAgentXMPPAddress = "<?=$_POST['un']?>" + PA_CLOUD_HOST;
+	
+	var currentRealtimeUserPagerId = null;
 	
 	$(document).ready(function(){
 		
@@ -94,7 +97,7 @@ const FULL_NAME = 'Bedrijfshulpverlening';
 					if( (params.lat == 0 && params.lng == 0) || (params.lat == '0' && params.lng == '0') ){
 						// If we don't really have a loaction fix, notify the alarm room and don't zoom to the (ocean) location.
 						alarmString = '<strong>Geen alarmlocatie beschikbaar voor:</strong> Alarm van <strong>' + params.sender + '</strong>, type: ' + params.text + ' (' + params.datetime + ')';
-						addAlarmListUpdate(alarmString, 'alarm');
+						addAlarmListUpdate(alarmString, 'alarm-no-location');
 					} else {
 						map.setZoom(17);
 						map.panTo(alarmLocation);
@@ -140,6 +143,14 @@ const FULL_NAME = 'Bedrijfshulpverlening';
 				}
 			}
 			
+			// Message read confirmation
+			if(method == "messageread"){
+				// A user confirms that a message is read
+				console.log("Incoming 'message read' confirmation");
+				
+				addAlarmListUpdate('Bericht gelezen op de <em>' + params.platform + '</em> door <em>' + params.username + '</em>', 'message-read');
+			}
+			
 		}
 		
 		var messageFromAgentHandler = function(json, lastCalledMethod){
@@ -150,6 +161,20 @@ const FULL_NAME = 'Bedrijfshulpverlening';
 			if(lastCalledMethod == "getAllGroupMembersStatus"){
 				//console.log(json.result);
 				createGroupsTable(json.result);
+			}
+			
+			// Reply on the pagerId request
+			if(lastCalledMethod == "getPagerId"){
+				//console.log(json.result);
+				var pagerId = json.result
+				currentRealtimeUserPagerId = pagerId;
+				
+				// Disable realtime pager messaging if this user doesnt have a pager
+				if(typeof pagerId == 'undefined' || pagerId == null || pagerId == ''){
+					$('#message-to-pager .platform_pager').remove(); // .attr('disabled', 'disabled'); // Note: Doesnt really work, input keeps the disabled option as current
+				} else {
+					$('#message-to-pager .platform_pager:not(.platform_mobile)').append(' ['+pagerId+']');
+				}
 			}
 			
 			if(lastCalledMethod == "getDomainAgentUrl"){
@@ -332,7 +357,10 @@ const FULL_NAME = 'Bedrijfshulpverlening';
 		
 		$("#groupstatusses-container").html(table);
 		
-		// Link evenhandler to the usernames to it will open a dialog with the username in it
+		var self = this;
+		
+		// Link evenhandler to the usernames so it will open a dialog with the username in it
+		var modalWindow = $('.modal');
 		$(".realtime-link").click(function () {
 			var username = $(this).data('un');
 			console.log("Opening realtime dialog for user: " + username);
@@ -341,16 +369,64 @@ const FULL_NAME = 'Bedrijfshulpverlening';
 			var status = $(this).data('status');
 			console.log("This user has the status of: " + status);
 			if(status){
-				$("#realtime-content-container").html("Laden...");
+				$("#realtime-content-container").html("<h1>Gebruiker: " + username + "</h1>");
 			} else {
-				$("#realtime-content-container").html("Deze gebruiker is momenteel niet aanwezig, hierdoor is het niet mogelijk om in realtime zijn status, bewegingen en context te volgen.");
+				$("#realtime-content-container").html("Deze gebruiker is momenteel niet aanwezig, hierdoor is het niet mogelijk om in realtime berichten te versturen."); // zijn status, bewegingen en context te volgen.");
 				return;
 			}
 			
 			// Do some more (call agent to start realtime stuff and update the dialog from there)
-			$("#realtime-content-container").append("<br />Bezig met aanvragen van realtime data van " + username + "...");
+			//$("#realtime-content-container").append("<br />Bezig met aanvragen van realtime data van " + username + "...");
 			
-			cc.call(username + "" + CLIENT_HOST , "requestData", {'type': 'audio', 'transferToUser': "<?=$_POST['un']?>" + CLIENT_HOST }, function(result){});
+			// Send message to this user
+			$("#realtime-content-container").append("<p>Verstuur een bericht naar " + username + ": <p>");
+			$("#realtime-content-container").append("<div><textarea id='message-text'></textarea></div>");
+			$("#realtime-content-container").append("<div>Platform: <select id='message-to-pager'><option value='mobile_pager' class='platform_mobile platform_pager'>Mobiel + Pager</option><option value='mobile' class='platform_mobile'>Mobiel</option><option value='pager' class='platform_pager'>Pager</option></select></div>");
+			$("#realtime-content-container").append("<div><button id='send-message' class='btn btn-invert'>Versturen</button></div>");
+			
+			// Check if this user has a pager to send the message to (pagerId in return function saved in var: currentRealtimeUserPagerId)
+			var receiver = $("#dialog-username").text() + PA_CLOUD_HOST;
+			cc.call(receiver, "getPagerId", {}, function(result){});
+			
+			/* Send message to (mobile) user */
+			$('#send-message').click(function(){
+			
+				// Close the modal
+				modalWindow.modal('hide');
+				
+				// Where to send this message to?
+				var sendOption = $('#message-to-pager').val();
+				
+				var usernameReceiver = $("#dialog-username").text();
+				var mobileReceiver = usernameReceiver + MOBILE_HOST;
+				var pagerIdReceiver = currentRealtimeUserPagerId;
+				var msg = $('#message-text').val();
+				
+				if(msg == ''){
+					alert('Vul een bericht in voordat u deze verzend.');
+					return;
+				}
+					
+				// Option: To mobile only and mobile+pager (mobile only part)
+				if(sendOption == 'mobile' || sendOption == 'mobile_pager'){
+					console.log('Sending message from ['+self.username+'] to ['+mobileReceiver+'] on the mobile app. [' + msg + ']');
+					addAlarmListUpdate('Bericht verzonden namens <em>'+self.username+'</em> naar de <strong>mobiele app</strong> van <em>'+usernameReceiver+'</em>.', 'message-outgoing');
+					cc.call( mobileReceiver, "onIncomingMessage", {'message': msg, 'fromUser': self.username}, function(result){ });
+				}
+				
+				// Option: To pager only and mobile+pager (pager only part)
+				if(sendOption == 'pager' || sendOption == 'mobile_pager'){
+					console.log('Sending message from ['+self.username+'] to ['+pagerIdReceiver+'] on the pager. [' + msg + ']');
+					// Get
+					$.get('pagerproxy.php?pagerId='+pagerIdReceiver+'&message=' + encodeURIComponent(msg) + '', function(data){
+						addAlarmListUpdate('Bericht verzonden namens <em>'+self.username+'</em> naar de <strong>pager ['+pagerIdReceiver+']</strong> van <em>'+usernameReceiver+'</em> [<code>'+data+'</code>].', 'message-outgoing');
+					});
+				}
+				
+			});
+			
+			
+			//cc.call(username + "" + CLIENT_HOST , "requestData", {'type': 'audio', 'transferToUser': "<?=$_POST['un']?>" + CLIENT_HOST }, function(result){});
 			
 		});
 		
@@ -391,6 +467,8 @@ const FULL_NAME = 'Bedrijfshulpverlening';
 			
 			if(type == "alarm"){
 				extraHtml = "<div class='list-icon list-alarm-icon'><img src='img/icon_alarm_small.png' /></div>";
+			}else if(type == "alarm-no-location"){
+				extraHtml = "<div class='list-icon list-alarm-icon'><img src='img/icon_missing_location_small.png' /></div>";
 			}else if(type == "group-change"){
 				extraHtml = "<div class='list-icon list-change-icon'><img src='img/icon_group_change_small.png' /></div>";
 			}else if(type == "group-change-available"){
@@ -403,6 +481,10 @@ const FULL_NAME = 'Bedrijfshulpverlening';
 				extraHtml = "<div class='list-icon list-status-icon'><img src='img/icon_status_no_go_small.png' /></div>";
 			}else if(type == "connection-online"){
 				extraHtml = "<div class='list-icon list-status-icon'><img src='img/icon_connection_small.png' /></div>";
+			}else if(type == "message-read"){
+				extraHtml = "<div class='list-icon list-status-icon'><img src='img/icon_message_read_small.png' /></div>";
+			}else if(type == "message-outgoing"){
+				extraHtml = "<div class='list-icon list-status-icon'><img src='img/icon_message_outgoing_small.png' /></div>";
 			}
 			
 			
@@ -450,6 +532,7 @@ const FULL_NAME = 'Bedrijfshulpverlening';
 	$('#logout').click(function(e){
 		cc.disconnect();
 	});
+	
     </script>
 	
 </head>
