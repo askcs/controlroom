@@ -56,7 +56,10 @@ const FULL_NAME = 'Bedrijfshulpverlening';
 	var password = "<?=base64_encode($_POST['pw'])?>";
 	var userPersonalAgentXMPPAddress = "<?=$_POST['un']?>" + PA_CLOUD_HOST;
 	
-	var currentRealtimeUserPagerId = null;
+	var currentRealtimeUserPagerId;
+	
+	var lastAlarmingUser;
+	var savedGroupsJSON;
 	</script>
 	
 	<script src="js/base64.js"></script>

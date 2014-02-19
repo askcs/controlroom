@@ -19,9 +19,15 @@ $(document).ready(function(){
 			setBlinkBackgroundColor("#FF0000");
 			triggerAlarmBackground();
 			
+			// Set this user as 'last alarming user' for now
+			lastAlarmingUser = params.sender;
+			
+			// Re-generate the groups table with the latest known user-data, but with the alarm user in red
+			createGroupsTable(savedGroupsJSON);
+			
 			// Zoom and pan to alarm location if map is loaded
 			if(map != null){
-			
+				
 				alarmString = 'Alarm door <strong>' + params.sender + '</strong> van het type: ' + params.text + ' (' + params.datetime + ')';
 				addAlarmListUpdate(alarmString, 'alarm');
 				
@@ -209,6 +215,8 @@ var firstRun = true;
 var currentUsersStatus = {};
 function createGroupsTable(groupsJSON){
 
+	savedGroupsJSON = groupsJSON;
+	
 	// Create table
 	var table = $('<table></table>').addClass('table table-striped table-hover table-bordered groupmember-statusses-table');
 	
@@ -232,7 +240,13 @@ function createGroupsTable(groupsJSON){
 		table.append(row);
 	
 		$.each(v, function(k1, v1) {
+		
 			row = $('<tr></tr>');
+			
+			// Add a round border for the last alarming user
+			if(k1 == lastAlarmingUser){
+				row.addClass('groupmember-statusses-alarming-user');
+			}
 			
 			// Check the current status against previous call to this function (check for changes)
 			// Only check for changes after the first run (reset firstRun outside each loops)
@@ -270,6 +284,11 @@ function createGroupsTable(groupsJSON){
 				var column1 = $('<td></td>').html("<span class='badge badge-warning'>Afwezig</span></a>");
 			}
 			
+			// If this is the user who send an alarm as last one; provide a 'resolved' (Probleem opgelost) button
+			if(k1 == lastAlarmingUser){
+				$(column1).append("<span class='badge badge-important' id='resolve-alarm'>Opgelost?</span></a>");
+			}
+			
 			row.append(column0);
 			row.append(column1);
 			
@@ -288,6 +307,26 @@ function createGroupsTable(groupsJSON){
 	console.log(currentUsersStatus);
 	
 	$("#groupstatusses-container").html(table);
+	
+	// Are we still in an alarm situation?
+	if(lastAlarmingUser != null){
+	
+		// Create an event handler for the label/button that resolves the alarm
+		$('#resolve-alarm').click(function(){
+			console.log('Resolving alarm of the last user [' + lastAlarmingUser + ']');
+			
+			
+			addAlarmListUpdate('De alarmsituatie van ' + lastAlarmingUser + ' is opgelost.', 'alarm-resolved');
+			
+			// No active alarm (user)
+			lastAlarmingUser = null;
+			
+			// Re-generate the groups table so that the alarm is resolved
+			createGroupsTable(savedGroupsJSON);
+
+		});
+		
+	}
 	
 	var self = this;
 	
@@ -400,6 +439,8 @@ function addAlarmListUpdate(msg, type){
 			extraHtml = "<div class='list-icon list-alarm-icon'><img src='img/icon_alarm_small.png' /></div>";
 		}else if(type == "alarm-no-location"){
 			extraHtml = "<div class='list-icon list-alarm-icon'><img src='img/icon_missing_location_small.png' /></div>";
+		}else if(type == "alarm-resolved"){
+			extraHtml = "<div class='list-icon list-alarm-icon'><img src='img/icon_check_small.png' /></div>";
 		}else if(type == "group-change"){
 			extraHtml = "<div class='list-icon list-change-icon'><img src='img/icon_group_change_small.png' /></div>";
 		}else if(type == "group-change-available"){
