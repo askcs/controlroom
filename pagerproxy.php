@@ -1,1 +1,1 @@
-<?=file_get_contents('http://askpack.ask-cs.com:4000/alarm/'.$_GET['pagerId'].'?message='.$_GET['message'])?>
+<?=file_get_contents('http://askpack.ask-cs.com:4000/message/'.$_GET['pagerId'].'?message='.urlencode($_GET['message']))?>
