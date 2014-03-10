@@ -163,6 +163,14 @@ $(document).ready(function(){
 				
 				setTimeout(function(){
 					
+					// Since this is interval based, check if the ALARM_AGENT_URL var is already set
+					if(ALARM_AGENT_URL == ''){
+						// Not yet, so the interval is to fast; show error
+						$("#dashboard-status").html("<h3>Status: <span class='label label-important' style='font-size: 85%; line-height: 1.1em;'>Error: Verbinding te langzaam</a></h3>");
+						$("#dashboard-loading").html('');
+						return; // Cancel this task, it's useless
+					}
+					
 					// Initial agent data loading done
 					$("#dashboard-loading").html('');
 					
