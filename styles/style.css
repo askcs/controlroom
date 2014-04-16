@@ -1,3 +1,40 @@
+/**/
+body{
+	background: url('../img/bg.png');
+}
+
+.content-container{
+	margin-top: 15px;
+}
+
+.navbar .brand{
+	height: 90px;
+	line-height: 90px;
+	padding: 0;
+	margin: 0;
+}
+
+#logout{
+	margin: 5px;
+}
+
+#logo{
+	float: left;
+	margin: 10px 20px -20px 5px;
+}
+
+#dashboard-status h3{
+	height: 80px;
+	line-height: 80px;
+}
+
+.navbar-inner{
+	background: none;
+	background-color: rgb(165, 55, 46);
+	overflow: hidden;
+}
+/**/
+
 body#login {
   padding-top: 40px;
   padding-bottom: 40px;

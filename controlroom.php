@@ -19,7 +19,7 @@ const FULL_NAME = 'Bedrijfshulpverlening';
 
     <title><?=SHORT_NAME?> Alarmcontrolecentrum</title>
     
-    <meta name="description" content="CapeClient v1.0.0">
+    <meta name="description" content="<?=SHORT_NAME?> Alarmcontrolecentrum">
     <meta name="viewport" content="width=device-width">
     
 	<script src="external/jquery.min.js"></script>
@@ -73,6 +73,8 @@ const FULL_NAME = 'Bedrijfshulpverlening';
 <div class="navbar navbar-fixed-top">
 	<div class="navbar-inner">
 		<div class="container">
+			
+			<!-- --><img id="logo" src="img/icon_optimal.png" /><!-- -->
 			<span class="brand"><a href="" class="brand"><?=FULL_NAME?> &ndash; Alarmcontrolecentrum</a> <a id="logout" class="btn btn-invert" href="login.php"> Uitloggen</a></span>
 
 			<div class="nav pull-right" id="dashboard-loading"></div>
@@ -85,7 +87,7 @@ const FULL_NAME = 'Bedrijfshulpverlening';
 </div>
 
 
-	<div class="container">
+	<div class="container content-container">
 
 		<!-- Main component for a primary marketing message or call to action -->
 		<div class="row-fluid">
