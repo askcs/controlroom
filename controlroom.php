@@ -105,6 +105,7 @@ const FULL_NAME = 'Bedrijfshulpverlening';
 					<hr />
 					<div id="map-canvas"></div>
 					
+					<div id="alarm-updates-list-loader"></div>
 					<ul id="alarm-updates-list"></ul>
 				</div>
 			</div>

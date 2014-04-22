@@ -101,6 +101,12 @@ body#dashboard{
 	margin-left: 10px;
 }
 
+#alarm-updates-list-loader{
+	display: none;
+	height: 60px;
+	background: url('../img/loader.gif') center center no-repeat;
+}
+
 .groupmember-statusses-table-group-heading{
 	font-weight: bold;
 	background-color: #111 !important;
