@@ -21,13 +21,15 @@
 
     <div class="container">
 
+	  <!-- <div class="alert alert-danger">Onderhoud &ndash; Het is op dit moment niet mogelijk om in te loggen op het Alarmcontrolecentrum. (Verwachting: Voor 12:00 terug online)</div> -->
+	  
       <form class="form-signin" method="post" action="controlroom.php">
         <h2 class="form-signin-heading">Inloggen &ndash; BHV</h2>
         <input type="text" name="un" class="input-block-level" placeholder="Username" value="<?=$_GET['un']?>" autofocus>
         <input type="password" name="pw" class="input-block-level" placeholder="Password">
         <label for="safestart" id="label-safestart">Safe start (for slower connections)? </label>
 		<input type="checkbox" name="safestart" id="safestart" class="input-block-level" placeholder="Safestart">
-        <button class="btn btn-large btn-primary btn-block" type="submit">Sign in</button>
+        <button class="btn btn-large btn-primary btn-block" type="submit" >Sign in</button><!-- disabled="disabled" -->
       </form>
 
     </div> <!-- /container -->

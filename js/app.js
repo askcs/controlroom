@@ -16,6 +16,10 @@ $(document).ready(function(){
 		
 		// Data which comes 'on the fly' from the cloud agent
 		if(method == "groupstatuschange"){
+		
+			// Don't refresh the groupmembers list if the app is processing old eventlogs
+			if(processingPreviousEventLogs) return;
+			
 			// Re-request all current userstatusses of all groups
 			console.log("Someone's status has changed, lets re-request all groupmembers statusses");
 			cc.call(ALARM_AGENT_URL, "getAllGroupMembersStatus", {}, function(result){ });
@@ -112,18 +116,19 @@ $(document).ready(function(){
 		
 			// Only run this if we got a result back (method is new and not all agents may have it, yet)
 			if(typeof json.result != 'undefined' && json.result != null){
-				console.log("Incoming initial data: " + json.result);
+				console.log("Incoming initial data: ");
+				console.log(json.result);
 				
 				processingPreviousEventLogs = true;
 				$.each(json.result, function(k, v) {
 					
-					console.log(k + ":");
-					console.log(v);
+					//console.log(k + ":");
+					//console.log(v);
 					
 					// Set the timestamp
 					if(typeof v.params.timestamp != 'undefined' && v.params.timestamp != null){
 						eventLogTimestamp = v.params.timestamp;
-						console.log('Using the timestamp from the event log: ' + eventLogTimestamp);
+						//console.log('Using the timestamp from the event log: ' + eventLogTimestamp);
 					}
 					
 					// Run the code
@@ -202,13 +207,13 @@ $(document).ready(function(){
 			// Now load the initial data
 			
 			// Get the domain agent id
-			console.log('Request domainAgentUrl from our own cloudagent: ' + userPersonalAgentXMPPAddress);
-			cc.call(userPersonalAgentXMPPAddress, "getDomainAgentUrl", {}, function(result){});
+			//console.log('Request domainAgentUrl from our own cloudagent: ' + userPersonalAgentXMPPAddress);
+			//cc.call(userPersonalAgentXMPPAddress, "getDomainAgentUrl", {}, function(result){});
 			
-			setTimeout(function(){
+			//setTimeout(function(){
 				
 				// Get the AlarmAgent URL from the domainagent
-				cc.call(DOMAIN_AGENT_URL, "getAlarmManagementAgentUrl", {}, function(result){});
+				cc.call(userPersonalAgentXMPPAddress, "getAlarmManagementAgentUrl", {'protocol': 'xmpp'}, function(result){});
 				
 				setTimeout(function(){
 					
@@ -247,7 +252,7 @@ $(document).ready(function(){
 					
 				}, startInterval);
 			
-			}, startInterval);
+			//}, startInterval);
 		
 		
 		} else if(status == Strophe.Status.CONNECTING){ // Currently connecting
@@ -494,6 +499,11 @@ function triggerAlarmBackground(){
 	
 	if(blinker > maxblinks){
 		blinker = 0;
+		
+		// Reset background
+		console.log('reset');
+		$("body").css("background", "none");
+		$("body").css("background-image", "url('../img/bg.png')");
 		return;
 	}
 	
@@ -566,7 +576,7 @@ function addAlarmListUpdate(msg, type){
 	} else {
 		dateObj = new Date();
 	}
-	timeString = dateObj.getHours() + ":" + dateObj.getMinutes() + ":" + dateObj.getSeconds();
+	timeString = padDigits(dateObj.getHours(), 2) + ":" + padDigits(dateObj.getMinutes(), 2) + ":" + padDigits(dateObj.getSeconds(), 2);
 	
 	// Append the date string if it's not today
 	if(dateObj.toLocaleDateString() != new Date().toLocaleDateString()){
@@ -574,12 +584,14 @@ function addAlarmListUpdate(msg, type){
 	}
 	
 	var eventHtml = extraHtml + "<span class='alarm-updates-list-time badge badge-info'>" + timeString + "</span>" + msg;
+	
 	// Prepend new messages...
-	if(processingPreviousEventLogs == false){
-		$("#alarm-updates-list").prepend( $("<li />").html( eventHtml ) );
+	if(processingPreviousEventLogs == true){
+		// Add restored messages under the last live-log message from this session
+		$("#alarm-updates-list li.live-log").last().after( $("<li />").html( eventHtml ) );
 	} else {
-		// Append when restoring older messages
-		$("#alarm-updates-list").append( $("<li />").html( eventHtml ) );
+		// Normall messages are added to the top of the list
+		$("#alarm-updates-list").prepend( $("<li />").addClass('live-log').html( eventHtml ) );
 	}
 }
 
@@ -599,4 +611,9 @@ $('#logout').click(function(e){
 // ucfirst
 String.prototype.ucfirst = function() {
 	return this.charAt(0).toUpperCase() + this.slice(1);
+}
+
+// Zero padding
+function padDigits(number, digits) {
+    return Array(Math.max(digits - String(number).length + 1, 0)).join(0) + number;
 }
