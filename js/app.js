@@ -28,7 +28,7 @@ $(document).ready(function(){
 		}
 		
 		if(method == "alarm"){
-			setBlinkBackgroundColor("#FF0000");
+			setBlinkBackgroundColor("#AA1013");
 			triggerAlarmBackground();
 			
 			alarmString = 'Alarm door <strong>' + params.sender + '</strong> van het type: ' + params.text + ' (' + params.datetime + ')';
@@ -84,14 +84,14 @@ $(document).ready(function(){
 				addAlarmListUpdate('Collega <strong>' + params.usernameSender + '</strong> heeft aangegeven om naar de alarmlocatie te gaan van <strong>' + params.usernameEmergency + '</strong>', 'status-go');
 				
 				// Green blink
-				setBlinkBackgroundColor("#228B22");
+				setBlinkBackgroundColor("#5C8901");
 				triggerAlarmBackground();
 			
 			} else {
 				addAlarmListUpdate('Collega <strong>' + params.usernameSender + '</strong> heeft aangegeven om <em>niet</em> naar de alarmlocatie te gaan van <strong>' + params.usernameEmergency + '</strong>', 'status-no-go');
 				
 				// Orange blink
-				setBlinkBackgroundColor("#FF8C00");
+				setBlinkBackgroundColor("#DE7B03");
 				triggerAlarmBackground();
 			}
 		}
@@ -488,6 +488,8 @@ function createGroupsTable(groupsJSON){
 var blinker = 0;
 var maxblinks = 8;
 var colorToBlink = "#FF0000";
+var bgUrl = 'img/bg.png';
+
 function setBlinkBackgroundColor(color){
 	colorToBlink = color;
 }
@@ -503,7 +505,7 @@ function triggerAlarmBackground(){
 		// Reset background
 		console.log('reset');
 		$("body").css("background", "none");
-		$("body").css("background-image", "url('../img/bg.png')");
+		$("body").css("background-image", "url('"+bgUrl+"')");
 		return;
 	}
 	
