@@ -174,7 +174,7 @@ $(document).ready(function(){
 		
 		if(lastCalledMethod == "getDomainAgentUrl"){
 			// TODO: Loop over results
-			//console.log(json.result);
+			console.log(json.result);
 			
 			DOMAIN_AGENT_URL = json.result;
 			DOMAIN_AGENT_URL = DOMAIN_AGENT_URL.replace('xmpp:', '');
@@ -183,7 +183,7 @@ $(document).ready(function(){
 		
 		if(lastCalledMethod == "getAlarmManagementAgentUrl"){
 			// TODO: Loop over results
-			//console.log(json.result);
+			console.log('getAlarmManagementAgentUrl: ' + json.result);
 			
 			ALARM_AGENT_URL = json.result;
 			ALARM_AGENT_URL = ALARM_AGENT_URL.replace('xmpp:', '');
@@ -213,7 +213,12 @@ $(document).ready(function(){
 			//setTimeout(function(){
 				
 				// Get the AlarmAgent URL from the domainagent
-				cc.call(userPersonalAgentXMPPAddress, "getAlarmManagementAgentUrl", {'protocol': 'xmpp'}, function(result){});
+				// [Backwards compatibility]: Use the old call for old accounts which start with bhv- or the 'ecr' account
+				if(username.indexOf('bhv-') > -1 || username == 'ecr'){
+					cc.call(userPersonalAgentXMPPAddress, "getAlarmManagementAgentUrl", {'protocol': 'xmpp'}, function(result){});
+				} else {
+					cc.call(userStandByAgentXMPPAddress, "getAlarmManagementAgentUrl", {'personalAgentId': username}, function(result){});
+				}
 				
 				setTimeout(function(){
 					
@@ -439,8 +444,10 @@ function createGroupsTable(groupsJSON){
 		$("#realtime-content-container").append("<div><button id='send-message' class='btn btn-invert'>Versturen</button></div>");
 		
 		// Check if this user has a pager to send the message to (pagerId in return function saved in var: currentRealtimeUserPagerId)
-		var receiver = $("#dialog-username").text() + PA_CLOUD_HOST;
+		var receiverUsername = $("#dialog-username").text();
+		var receiver = receiverUsername + PA_CLOUD_HOST;
 		cc.call(receiver, "getPagerId", {}, function(result){});
+		//cc.call(receiver, "getPagerId", {personalAgentId: receiverUsername}, function(result){});
 		
 		/* Send message to (mobile) user */
 		$('#send-message').click(function(){
@@ -533,6 +540,12 @@ function addAlarmListUpdate(msg, type){
 			extraHtml = "<div class='list-icon list-alarm-icon'><img src='img/icon_alarm_small.png' /></div>";
 		}else if(type == "alarm-no-location"){
 			extraHtml = "<div class='list-icon list-alarm-icon'><img src='img/icon_missing_location_small.png' /></div>";
+			
+			// Don't add it back to the cloud if we are currently restoring it from the cloud
+			if(processingPreviousEventLogs == false){
+				addSimpleEventDataToCloud(msg, type);
+			}
+			
 		}else if(type == "alarm-resolved"){
 			extraHtml = "<div class='list-icon list-alarm-icon'><img src='img/icon_check_small.png' /></div>";
 			
@@ -543,10 +556,28 @@ function addAlarmListUpdate(msg, type){
 			
 		}else if(type == "group-change"){
 			extraHtml = "<div class='list-icon list-change-icon'><img src='img/icon_group_change_small.png' /></div>";
+			
+			// Don't add it back to the cloud if we are currently restoring it from the cloud
+			if(processingPreviousEventLogs == false){
+				addSimpleEventDataToCloud(msg, type);
+			}
+			
 		}else if(type == "group-change-available"){
 			extraHtml = "<div class='list-icon list-change-icon'><img src='img/icon_group_member_available_small.png' /></div>";
+			
+			// Don't add it back to the cloud if we are currently restoring it from the cloud
+			if(processingPreviousEventLogs == false){
+				addSimpleEventDataToCloud(msg, type);
+			}
+			
 		}else if(type == "group-change-unavailable"){
 			extraHtml = "<div class='list-icon list-change-icon'><img src='img/icon_group_member_unavailable_small.png' /></div>";
+			
+			// Don't add it back to the cloud if we are currently restoring it from the cloud
+			if(processingPreviousEventLogs == false){
+				addSimpleEventDataToCloud(msg, type);
+			}
+			
 		}else if(type == "status-go"){
 			extraHtml = "<div class='list-icon list-status-icon'><img src='img/icon_status_go_small.png' /></div>";
 		}else if(type == "status-no-go"){

@@ -49,12 +49,14 @@ const FULL_NAME = 'Bedrijfshulpverlening';
 	
 	const CLIENT_HOST = "@xmpp.ask-cs.com/web"; // There is another one hardcoded in cape.js
 	const PA_CLOUD_HOST = "@xmpp.ask-cs.com/cloud";
+	const STANDBY_CLOUD_HOST = "@xmpp.ask-cs.com/standby";
 	const MOBILE_HOST = "@xmpp.ask-cs.com/android";
 	
 	var cc;
 	var username = "<?=$_POST['un']?>"; // Note: May conflict with the 'username' var used in the modal code
 	var password = "<?=base64_encode($_POST['pw'])?>";
 	var userPersonalAgentXMPPAddress = "<?=$_POST['un']?>" + PA_CLOUD_HOST;
+	var userStandByAgentXMPPAddress = "<?=$_POST['un']?>" + STANDBY_CLOUD_HOST;
 	
 	var currentRealtimeUserPagerId;
 	
