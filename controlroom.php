@@ -107,6 +107,42 @@ const FULL_NAME = 'Bedrijfshulpverlening';
 					<hr />
 					<div id="map-canvas"></div>
 					
+					<div id="send-alarm-form-container">
+						<form>
+							
+							<h2>Alarm versturen</h2>
+							
+							<div>
+								<div>
+									<em>Alleen groepen met minimaal 1 beschikbaar teamlid worden getoond.</em>
+								</div>
+								
+								Groep:
+								<select id="alarm_groups">
+									<!--<option>Alle groepen</option>-->
+								</select>
+								
+							</div>
+							
+							<div>
+								Alarm locatie: <input type="text" id="alarm_coords" />
+							</div>
+							
+							<div>
+								Alarm adres (obv geolocatie): <input type="text" id="alarm_address" disabled="disabled" value="..." />
+							</div>
+							
+							<div>
+								Alarm bericht: <input type="text" id="alarm_message" />
+							</div>
+							
+							<div>
+								<input type="submit" id="alarm_send" value="ALARM VERSTUREN" />
+							</div>
+							
+						</form>
+					</div>
+					
 					<div id="alarm-updates-list-loader"></div>
 					<ul id="alarm-updates-list"></ul>
 				</div>

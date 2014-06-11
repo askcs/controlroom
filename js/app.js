@@ -104,6 +104,21 @@ $(document).ready(function(){
 			addAlarmListUpdate('Bericht gelezen op de <em>' + params.platform + '</em> door <em>' + params.username + '</em>', 'message-read');
 		}
 		
+		/*
+		// Noooooo; my bad; it's in the PersonlAgent
+		// Implement missing methods for calls to this web front-end
+		if(method == "getPagerId"){
+			
+			console.log("getPagerId: ");
+			console.log( params );
+			
+			// Return an empty answer to prevent a 30-second delay timeout
+			cc.call(ALARM_AGENT_URL, null, {result: null}, function(result){ });
+			
+			//addAlarmListUpdate("Een groepslid heeft zijn status aangepast, de lijst in de statussen kolom is geupdatet.", 'group-change');
+		}
+		*/
+		
 	}
 	
 	var messageFromAgentHandler = function(json, lastCalledMethod){
@@ -232,6 +247,17 @@ $(document).ready(function(){
 					
 					// Set the connection state
 					addAlarmListUpdate( username + " is verbonden met het alarmeringen netwerk.", 'connection-online');
+					
+					
+					// Enable sending alarms from the map (right click)
+					// Attach right mouse click listener
+					google.maps.event.addListener(map, 'rightclick', function(event) {
+						
+						var lat = event.latLng.lat();
+						var lng = event.latLng.lng();
+						
+						sendAlarmForLocation(lat, lng);
+					});
 					
 					// Initial agent data loading done
 					$("#dashboard-loading").html('');
@@ -419,7 +445,7 @@ function createGroupsTable(groupsJSON){
 	var self = this;
 	
 	// Link evenhandler to the usernames so it will open a dialog with the username in it
-	var modalWindow = $('.modal');
+	var modalWindow = $('#realtime');
 	$(".realtime-link").click(function () {
 		var username = $(this).data('un');
 		console.log("Opening realtime dialog for user: " + username);
@@ -510,7 +536,7 @@ function triggerAlarmBackground(){
 		blinker = 0;
 		
 		// Reset background
-		console.log('reset');
+		//console.log('reset');
 		$("body").css("background", "none");
 		$("body").css("background-image", "url('"+bgUrl+"')");
 		return;
@@ -527,6 +553,150 @@ function triggerAlarmBackground(){
 	}, 100);
 	
 }
+
+/* Send alarm from map */
+function sendAlarmForLocation(lat, lng){
+
+	// Alarm form
+	var alarmForm = $('#send-alarm-form-container');
+	
+	// Try to reverse geocode the location
+	console.log(lat + ', ' + lng);
+	codeLatLng(lat, lng);
+	
+	// Prefill all possible groups
+	var alarmGroups = $('#alarm_groups');
+	alarmGroups.empty();
+	$.each(savedGroupsJSON, function(k, v) {
+	
+		// Only add the groups to the list that contain at least 1 (available) member
+	
+		//console.log(k + ':');
+	
+		var groupContainsActiveMember = false;
+		$.each(v, function(k1, v1) {
+			//console.log(k1 + ' - ' + v1);
+			if(v1){
+				groupContainsActiveMember = true;
+			}
+		});
+		
+		if(groupContainsActiveMember){
+			alarmGroups.append( $('<option value="' + k + '" />').text("Groep: " + k ) );
+		}
+		
+		
+	});
+	
+	// Add coords to alarm form
+	$('#alarm_coords').val( lat + ', ' + lng );
+	
+	// Show the 'send alarm' form
+	alarmForm.slideDown();
+
+}
+
+$(document).ready(function(){
+	$('#alarm_send').click(function(e){
+	
+		// Prevent page reload submit
+		e.preventDefault();
+		
+		console.log('Alarm wordt verzonden...');
+		
+		// Get alarm data
+		
+		// Group
+		var groupname = $("#alarm_groups").val();
+		
+		// NOTE: To support sending an alarm to multiple groups we first need to update the 
+		// forwardAlarmToColleagues method in the AlarmManagementAgent to accept a HashSet as param instead of a single string
+		
+		// Coords
+		var coords = $('#alarm_coords').val();
+		coords = coords.split(', ');
+		
+		// Location
+		var locationAddress = $("#alarm_address").val();
+		
+		// Message
+		var message = $("#alarm_message").val();
+		
+		// Date
+		var now = new Date();
+		var date = now.toLocaleDateString();
+		var time = now.toLocaleTimeString();
+		
+		// Alarm object
+		var alarmObj = {
+			"assigner": username,
+			"type": "alarm",
+			"text": "Controlroom: " + message,
+			"locationName": locationAddress,
+			"lat": parseFloat( coords[0] ),
+			"lon": parseFloat( coords[1] ),
+			"assignmentDate": date + " " + time,
+			"timestamp": now.getTime(),
+			"status": "open"
+		};
+		
+		var alarmParams = { 
+			"alarm": alarmObj,
+			"groupname": groupname
+		};
+		
+		console.log(alarmParams);
+		
+		// Send the alarm to the alarm manager
+		cc.call(ALARM_AGENT_URL, "forwardAlarmToColleagues", alarmParams, function(result){});
+		
+		// Alarm form
+		var alarmForm = $('#send-alarm-form-container');
+		alarmForm.slideUp();
+		
+		// Prevent actual submit
+		return false;
+		
+	});
+});
+
+function sendAlarmAddAddress( address ){
+	console.log('Received geocoded address: ' + address);
+	$('#alarm_address').val( address );
+}
+
+/* Reverse geocoding */
+function codeLatLng(lat, lng) {
+	
+    var lat = parseFloat( lat );
+    var lng = parseFloat( lng );
+	
+	var noAddr = "No address found at location";
+	
+    var latlng = new google.maps.LatLng(lat, lng);
+    geocoder.geocode({'latLng': latlng}, function(results, status) {
+	
+		if (status == google.maps.GeocoderStatus.OK) {
+		
+			if (results[1]) {
+				
+				marker = new google.maps.Marker({
+					position: latlng,
+					map: map,
+					icon: 'img/map_icon_alarm.png'
+				});
+				
+				console.log( results[1] );
+				
+				sendAlarmAddAddress( results[1].formatted_address );
+			}
+			
+		}
+		
+    });
+}
+
+/* Alarm events list */
 
 var curTime;
 var curTimeString;

@@ -3,6 +3,7 @@ var alarmMarker;
 var oms;
 var infowindow;
 var ownLocation = null;
+var geocoder;
 
 function initialize() {
 	
@@ -17,6 +18,7 @@ function initialize() {
 	// Request own location (now we have a map)
 	getOwnLocation();
 	
+	// Spider options (for multiple markers nearby eachother)
 	var spiderOptions = {
 		markersWontMove: true,
 		markersWontHide: true,
@@ -27,7 +29,11 @@ function initialize() {
 	
 	oms = new OverlappingMarkerSpiderfier(map, spiderOptions);
 	
+	// Default info window
 	infowindow = new google.maps.InfoWindow();
+	
+	// Geocoder
+	geocoder = new google.maps.Geocoder();
 	
 }
 

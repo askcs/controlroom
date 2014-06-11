@@ -200,3 +200,11 @@ hr{
 	width: 90%;
 	height: 100px;
 }
+
+/* Send alarm form */
+#send-alarm-form-container{
+	display: none;
+	padding: 10px;
+	margin: 5px;
+	border: 2px solid #F00;
+}
