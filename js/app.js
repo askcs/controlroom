@@ -2,6 +2,8 @@ $(document).ready(function(){
 		
 	console.log("Start!");
 	
+	var getAllGroupMembersStatusMethodName = "getAllGroupMembersStatus"; // TODO: Temporary solution since the back-end disabled this function by prepending a underscore
+	
 	var msgHandler = function(method, params){
 		console.log("Method: " + method);
 		console.log(params);
@@ -22,7 +24,7 @@ $(document).ready(function(){
 			
 			// Re-request all current userstatusses of all groups
 			console.log("Someone's status has changed, lets re-request all groupmembers statusses");
-			cc.call(ALARM_AGENT_URL, "getAllGroupMembersStatus", {}, function(result){ });
+			cc.call(ALARM_AGENT_URL, getAllGroupMembersStatusMethodName, {}, function(result){ });
 			
 			//addAlarmListUpdate("Een groepslid heeft zijn status aangepast, de lijst in de statussen kolom is geupdatet.", 'group-change');
 		}
@@ -168,7 +170,7 @@ $(document).ready(function(){
 		}
 		
 		// Data which this webclient has requested
-		if(lastCalledMethod == "getAllGroupMembersStatus"){
+		if(lastCalledMethod == getAllGroupMembersStatusMethodName){
 			//console.log(json.result);
 			createGroupsTable(json.result);
 		}
@@ -230,8 +232,10 @@ $(document).ready(function(){
 				// Get the AlarmAgent URL from the domainagent
 				// [Backwards compatibility]: Use the old call for old accounts which start with bhv- or the 'ecr' account
 				if(username.indexOf('bhv-') > -1 || username == 'ecr'){
+					console.log('PersonalAgent: ' + userPersonalAgentXMPPAddress);
 					cc.call(userPersonalAgentXMPPAddress, "getAlarmManagementAgentUrl", {'protocol': 'xmpp'}, function(result){});
 				} else {
+					console.log('StandByAgent: ' + userStandByAgentXMPPAddress);
 					cc.call(userStandByAgentXMPPAddress, "getAlarmManagementAgentUrl", {'personalAgentId': username}, function(result){});
 				}
 				
@@ -266,7 +270,7 @@ $(document).ready(function(){
 					$("#groupstatusses-container").html('<p><img alt="Laden..." src="img/loader.gif" /></p>');
 					
 					// Get intial data to display
-					cc.call(ALARM_AGENT_URL, "getAllGroupMembersStatus", {}, function(result){});
+					cc.call(ALARM_AGENT_URL, getAllGroupMembersStatusMethodName, {}, function(result){});
 					
 					setTimeout(function(){
 					
